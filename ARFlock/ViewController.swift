@@ -26,19 +26,19 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         sceneView.showsStatistics = true
         
         // Create a new scene
-        let scene = SCNScene(named: "art.scnassets/ship.scn")!
+        let scene = SCNScene(named: "art.scnassets/ship2.scn")!
         
         // Set the scene to the view
         sceneView.scene = scene
         
-//        // create and add a camera to the scene
-//        let cameraNode = SCNNode()
-//        cameraNode.camera = SCNCamera()
-//        sceneView.scene.rootNode.addChildNode(cameraNode)
-//
-//        // place the camera
-//        cameraNode.position = SCNVector3(x: 0, y: 0, z: 70)
-//        cameraNode.camera?.zFar = 100
+        //        // create and add a camera to the scene
+        //        let cameraNode = SCNNode()
+        //        cameraNode.camera = SCNCamera()
+        //        sceneView.scene.rootNode.addChildNode(cameraNode)
+        //
+        //        // place the camera
+        //        cameraNode.position = SCNVector3(x: 0, y: 0, z: 70)
+        //        cameraNode.camera?.zFar = 100
         
         // create and add a light to the scene
         let lightNode = SCNNode()
@@ -56,17 +56,15 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         
         // retrieve the ship node
         for _ in 0...100 {
-            let shipNode = scene.rootNode.childNode(withName: "ship", recursively: true)!.clone()
+            let shipNode = scene.rootNode.childNode(withName: "F_35B_Lightning_II", recursively: true)!.clone()
             
             let ship = Ship(newNode: shipNode);
             sceneView.scene.rootNode.addChildNode(ship.node)
             ships.append(ship);
             ship.node.position = SCNVector3(x: Float(Int(arc4random_uniform(10)) - 5), y: Float(Int(arc4random_uniform(10)) - 5), z: 0)
-            ship.node.scale = SCNVector3(x: Float(1.5), y: Float(1.5), z: Float(1.5))
+            ship.node.scale = SCNVector3(x: Float(0.002), y: Float(0.002), z: Float(0.002))
         }
-        
-        
-        let shipNode = scene.rootNode.childNode(withName: "ship", recursively: true)!.clone()
+        let shipNode = scene.rootNode.childNode(withName: "F_35B_Lightning_II", recursively: true)!.clone()
         shipNode.position = SCNVector3(x: Float(-100), y: Float(-100), z: 0)
         sceneView.scene.rootNode.addChildNode(shipNode)
         let animation = CABasicAnimation(keyPath: "rotation")
@@ -91,6 +89,29 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         
         // Pause the view's session
         sceneView.session.pause()
+    }
+    
+    private func nodeAtLocation(_ location:CGPoint) -> SCNNode? {
+        guard let arView = sceneView else { return nil }
+        let result = arView.hitTest(location, options: nil)
+        return result.first?.node
+    }
+    
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+        guard let currentTouchPoint = touches.first?.location(in: self.sceneView) else { return }
+        if let result  = nodeAtLocation(currentTouchPoint) {
+            let material = result.geometry!.firstMaterial!
+            SCNTransaction.begin()
+            SCNTransaction.animationDuration = 0.5
+            SCNTransaction.completionBlock = {
+                SCNTransaction.begin()
+                SCNTransaction.animationDuration = 0.5
+                material.emission.contents = UIColor.black
+                SCNTransaction.commit()
+            }
+            material.emission.contents = UIColor.red
+            SCNTransaction.commit()
+        }
     }
     
     // MARK: - ARSCNViewDelegate
